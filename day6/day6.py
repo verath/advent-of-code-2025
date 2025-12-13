@@ -1,7 +1,8 @@
 import unittest
-from typing import Callable, List
+from functools import reduce
 from operator import add, mul
 from pathlib import Path
+from typing import Callable, List
 
 SCRIPT_DIR = Path(__file__).parent
 INPUT = (SCRIPT_DIR / "input.txt").read_text()
@@ -36,11 +37,34 @@ def part1(input_str: str) -> int:
 def part2(input_str: str) -> int:
     lines = input_str.splitlines()
     operators = parse_operators(lines)
-    # TODO :)
-    return 1
+
+    # Build columns.
+    cols = [[] for _ in range(len(lines[0]))]
+    for line in lines:
+        for i, ch in enumerate(line):
+            if ch != " ":
+                cols[i].append(ch)
+
+    # Make last problem also end with an empty column.
+    cols.append([])
+
+    # Apply operator per problem.
+    problem_idx = 0
+    problem_values = []
+    total = 0
+    for col in cols:
+        if col:
+            problem_values.append(int("".join(col)))
+        else:
+            # Empty column == new problem.
+            total += reduce(operators[problem_idx], problem_values)
+            problem_values.clear()
+            problem_idx += 1
+
+    return total
 
 
-class Day05Test(unittest.TestCase):
+class Day06Test(unittest.TestCase):
 
     def test_part1(self) -> None:
         self.assertEqual(part1(TEST_INPUT), 4277556)
@@ -48,13 +72,13 @@ class Day05Test(unittest.TestCase):
 
     def test_part2(self) -> None:
         self.assertEqual(part2(TEST_INPUT), 3263827)
-        self.assertEqual(part2(INPUT), 0)
+        self.assertEqual(part2(INPUT), 7858808482092)
 
 
 def main() -> None:
     unittest.main(exit=False)
     print("part1:", part1(INPUT))
-    # print("part2:", part2(INPUT))
+    print("part2:", part2(INPUT))
 
 
 if __name__ == "__main__":
